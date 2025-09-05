@@ -32,6 +32,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
 
   useEffect(() => {
     if (isOpen && reportIds.length) {
+      initiatedDownload.current = false;
       requestReportsMerge(reportIds);
     } else {
       cancelReportsMerge();
