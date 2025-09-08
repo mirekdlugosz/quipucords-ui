@@ -15,9 +15,9 @@ exports[`MergeReportsModal should render a basic component: basic 1`] = `
   position="default"
   showClose={true}
   title="t([
-  "view.label",
+  "merge.modal",
   {
-    "context": "merge"
+    "context": "title"
   }
 ])"
   titleIconVariant={null}
@@ -28,7 +28,12 @@ exports[`MergeReportsModal should render a basic component: basic 1`] = `
     <EmptyState
       headingLevel="h2"
       icon={[Function]}
-      titleText="Merging reports"
+      titleText="t([
+  "merge.modal",
+  {
+    "context": "body-in-progress"
+  }
+])"
     />
   </Bullseye>
 </Modal>
@@ -49,9 +54,9 @@ exports[`MergeReportsModal should render a component after merge failed: errored
   position="default"
   showClose={true}
   title="t([
-  "view.label",
+  "merge.modal",
   {
-    "context": "merge"
+    "context": "title"
   }
 ])"
   titleIconVariant={null}
@@ -62,11 +67,21 @@ exports[`MergeReportsModal should render a component after merge failed: errored
     <EmptyState
       headingLevel="h2"
       icon={[Function]}
-      titleText="Something went wrong"
+      titleText="t([
+  "merge.modal",
+  {
+    "context": "header-errored"
+  }
+])"
     >
       <EmptyStateBody>
-        Error would go here: 
-        Lorem ipsum dolor sit
+        t([
+  "merge.modal",
+  {
+    "context": "body-errored",
+    "msg": "Lorem ipsum dolor sit"
+  }
+])
       </EmptyStateBody>
     </EmptyState>
   </Bullseye>
@@ -88,9 +103,9 @@ exports[`MergeReportsModal should render a component after merge succeeded: succ
   position="default"
   showClose={true}
   title="t([
-  "view.label",
+  "merge.modal",
   {
-    "context": "merge"
+    "context": "title"
   }
 ])"
   titleIconVariant={null}
@@ -101,10 +116,20 @@ exports[`MergeReportsModal should render a component after merge succeeded: succ
     <EmptyState
       headingLevel="h2"
       icon={[Function]}
-      titleText="Success"
+      titleText="t([
+  "merge.modal",
+  {
+    "context": "header-successful"
+  }
+])"
     >
       <EmptyStateBody>
-        Your download will start automatically
+        t([
+  "merge.modal",
+  {
+    "context": "body-successful"
+  }
+])
       </EmptyStateBody>
     </EmptyState>
   </Bullseye>

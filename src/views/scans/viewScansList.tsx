@@ -175,15 +175,7 @@ const ScansListView: React.FunctionComponent = () => {
   };
 
   const canMergeReports = () => {
-    // this looks like a copy of hasSelectedScans, but is separate to allow
-    // expression of rules like "all selected scans are successfully completed"
-    // FIXME: when exactly should button be enabled? At least 2? At least 2 successful?
-    // What if I select 4, but 1 is failed (or running)? Should we even do anything, or
-    // just let backend fail and inform the user?
-    if (Array.isArray(selectedItems)) {
-      return selectedItems.length >= 2;
-    }
-    return Object.values(selectedItems ?? {}).filter(Boolean).length >= 2;
+    return selectedItems.filter(scan => scan.most_recent?.status === 'completed').length >= 2;
   };
 
   const renderToolbar = () => (

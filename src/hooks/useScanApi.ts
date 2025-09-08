@@ -10,7 +10,8 @@ import {
   type ScanJobsResponse,
   type SourceType,
   type Connections,
-  type ReportsAggregateResponse
+  type ReportsAggregateResponse,
+  simpleScanJob
 } from '../types/types';
 
 type ApiDeleteScanSuccessType = {
@@ -499,31 +500,37 @@ const useMergeReportsApi = () => {
     state: MergeProcessState;
     mergedReportId: number | undefined;
   }>({ state: MergeProcessState.InProgress, mergedReportId: undefined });
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [mergeJobId, setMergeJobId] = useState<number | undefined>(undefined);
   const [mergePollAttempt, setMergePollAttempt] = useState<number>(0);
 
-  const requestReportsMerge = useCallback(async (report_ids: number[]) => {
-    let response: AxiosResponse;
-    try {
-      response = await axios.post(`${process.env.REACT_APP_REPORTS_SERVICE_MERGE}`, { reports: report_ids });
-      const jobId = response.data.job_id;
-      if (!jobId) {
-        // FIXME: translate
-        throw new Error('Server did not return job_id value');
+  const waitInterval = process.env.REACT_APP_MERGE_POLL_INTERVAL
+    ? Number.parseInt(process.env.REACT_APP_MERGE_POLL_INTERVAL, 10)
+    : 1000;
+
+  const requestReportsMerge = useCallback(
+    async (report_ids: number[]) => {
+      let response: AxiosResponse;
+      try {
+        response = await axios.post(`${process.env.REACT_APP_REPORTS_SERVICE_MERGE}`, { reports: report_ids });
+        const jobId = response.data.job_id;
+        if (!jobId) {
+          throw new Error(t('merge.error', { context: 'no-jobid' }));
+        }
+        setMergeJobId(jobId);
+      } catch (error) {
+        if (isAxiosError(error)) {
+          setErrorMessage(error.message);
+        } else if (error instanceof Error) {
+          setErrorMessage(error.message);
+        } else {
+          setErrorMessage(t('merge.error', { context: 'unknown' }));
+        }
       }
-      setMergeJobId(jobId);
-    } catch (error) {
-      if (isAxiosError(error)) {
-        setErrorMessage(error.message);
-      } else if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        // FIXME: translate?
-        setErrorMessage('Unknown error');
-      }
-    }
-  }, []);
+    },
+    [t]
+  );
 
   const cancelReportsMerge = useCallback((): void => {
     setMergeProcessState({
@@ -541,11 +548,10 @@ const useMergeReportsApi = () => {
     }
 
     axios
-      // FIXME: hardcoded URL
-      .get(`/api/v2/jobs/${mergeJobId}/`)
-      .then(response => {
+      .get(`${process.env.REACT_APP_SCAN_JOBS_V2_SERVICE}${mergeJobId}/`)
+      .then((response: AxiosResponse<simpleScanJob>) => {
         const status = response.data.status;
-        // FIXME: support other statuses?
+
         if (status === 'completed') {
           setMergeProcessState({
             state: MergeProcessState.Successful,
@@ -554,28 +560,25 @@ const useMergeReportsApi = () => {
           return;
         }
 
-        if (status === 'failed') {
+        if (['failed', 'canceled'].includes(status)) {
           setMergeProcessState({
             state: MergeProcessState.Errored,
             mergedReportId: undefined
           });
-          // FIXME: translate?
-          setErrorMessage('Merge job failed');
+          setErrorMessage(response.data.status_message);
           return;
         }
 
-        // FIXME: hardcoded wait time
-        setTimeout(() => setMergePollAttempt(mergePollAttempt + 1), 1000);
+        setTimeout(() => setMergePollAttempt(mergePollAttempt + 1), waitInterval);
       })
       .catch(error => {
         if (isAxiosError(error)) {
           setErrorMessage(error.message);
         } else {
-          // FIXME: translate?
-          setErrorMessage('Unknown error');
+          setErrorMessage(t('merge.error', { context: 'unknown' }));
         }
       });
-  }, [mergeJobId, mergePollAttempt]);
+  }, [mergeJobId, mergePollAttempt, waitInterval, t]);
 
   // FIXME: keep useEffect or do it explicitly in catch blocks?
   useEffect(() => {

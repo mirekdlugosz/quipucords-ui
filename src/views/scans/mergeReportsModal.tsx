@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core';
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
-import { BugIcon, CheckCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon, CheckCircleIcon } from '@patternfly/react-icons';
 import { useMergeReportsApi, MergeProcessState } from '../../hooks/useScanApi';
 
 interface MergeReportsModalProps {
@@ -50,26 +50,43 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
   return (
     <Modal
       variant={ModalVariant.medium}
-      title={t('view.label', { context: 'merge' })}
+      title={t('merge.modal', { context: 'title' })}
       isOpen={isOpen}
       onClose={() => onClose()}
     >
       {mergeProcessState.state === MergeProcessState.InProgress && (
         <Bullseye>
-          <EmptyState headingLevel="h2" icon={Spinner} titleText="Merging reports"></EmptyState>
+          <EmptyState
+            headingLevel="h2"
+            icon={Spinner}
+            titleText={t('merge.modal', { context: 'body-in-progress' })}
+          ></EmptyState>
         </Bullseye>
       )}
       {mergeProcessState.state === MergeProcessState.Successful && (
         <Bullseye>
-          <EmptyState headingLevel="h2" icon={CheckCircleIcon} titleText="Success">
-            <EmptyStateBody>Your download will start automatically</EmptyStateBody>
+          <EmptyState
+            headingLevel="h2"
+            icon={CheckCircleIcon}
+            titleText={t('merge.modal', { context: 'header-successful' })}
+          >
+            <EmptyStateBody>{t('merge.modal', { context: 'body-successful' })}</EmptyStateBody>
           </EmptyState>
         </Bullseye>
       )}
       {mergeProcessState.state === MergeProcessState.Errored && (
         <Bullseye>
-          <EmptyState headingLevel="h2" icon={BugIcon} titleText="Something went wrong">
-            <EmptyStateBody>Error would go here: {errorMessage}</EmptyStateBody>
+          <EmptyState
+            headingLevel="h2"
+            icon={ExclamationCircleIcon}
+            titleText={t('merge.modal', { context: 'header-errored' })}
+          >
+            <EmptyStateBody>
+              {t('merge.modal', {
+                context: 'body-errored',
+                msg: errorMessage
+              })}
+            </EmptyStateBody>
           </EmptyState>
         </Bullseye>
       )}

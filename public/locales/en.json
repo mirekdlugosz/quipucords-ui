@@ -141,6 +141,17 @@
     "invalid": "Invalid login credentials.",
     "title": "Log in to your account"
   },
+  "merge": {
+    "modal_title": "Merge reports",
+    "modal_header-in-progress": "Merging reports",
+    "modal_body-in-progress": "This typically takes no more than 1 minute",
+    "modal_header-successful": "Merge completed",
+    "modal_body-successful": "Your download will start automatically",
+    "modal_header-errored": "Merge failed",
+    "modal_body-errored": "{{msg}}",
+    "error_no-jobid": "Server did not return job_id value",
+    "error_unknown": "Unknown error"
+  },
   "modal": {
     "title_scan-summary": "Scan summary",
     "subtitle_scan-id": "Scan ID: {{value}}",
@@ -361,7 +372,6 @@
     "error_title_sources": "Sources is temporarily unavailable",
     "label_credentials": "Credentials",
     "label_scans-names": "Scans: {{name}}",
-    "label_merge": "Merge reports",
     "label_sources": "Sources",
     "label_not-found_home": "Take me home"
   },
