@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core';
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 import { ExclamationCircleIcon, CheckCircleIcon } from '@patternfly/react-icons';
-import { useMergeReportsApi, MergeProcessState } from '../../hooks/useScanApi';
+import { useMergeReportsApi } from '../../hooks/useScanApi';
 
 interface MergeReportsModalProps {
   isOpen: boolean;
@@ -19,7 +19,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
   onSuccess = Function.prototype
 }) => {
   const { t } = useTranslation();
-  const { requestReportsMerge, cancelReportsMerge, mergeProcessState, errorMessage } = useMergeReportsApi();
+  const { requestReportsMerge, cancelReportsMerge, mergeProcessState } = useMergeReportsApi();
   // Workaround the following problem:
   // 1. onSuccess is called. This causes report to download and sets reportIdsToMerge to []
   // 2. empty reportIdsToMerge closes the modal
@@ -40,10 +40,9 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
   }, [isOpen, requestReportsMerge, cancelReportsMerge, reportIds]);
 
   useEffect(() => {
-    const { state, mergedReportId } = mergeProcessState;
-    if (state === MergeProcessState.Successful && mergedReportId !== undefined && !initiatedDownload.current) {
+    if (mergeProcessState.state === 'Successful' && !initiatedDownload.current) {
       initiatedDownload.current = true;
-      onSuccess(mergedReportId);
+      onSuccess(mergeProcessState.mergedReportId);
     }
   }, [mergeProcessState, onSuccess]);
 
@@ -54,7 +53,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
       isOpen={isOpen}
       onClose={() => onClose()}
     >
-      {mergeProcessState.state === MergeProcessState.InProgress && (
+      {mergeProcessState.state === 'InProgress' && (
         <Bullseye>
           <EmptyState
             headingLevel="h2"
@@ -63,7 +62,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
           ></EmptyState>
         </Bullseye>
       )}
-      {mergeProcessState.state === MergeProcessState.Successful && (
+      {mergeProcessState.state === 'Successful' && (
         <Bullseye>
           <EmptyState
             headingLevel="h2"
@@ -74,7 +73,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
           </EmptyState>
         </Bullseye>
       )}
-      {mergeProcessState.state === MergeProcessState.Errored && (
+      {mergeProcessState.state === 'Errored' && (
         <Bullseye>
           <EmptyState
             headingLevel="h2"
@@ -84,7 +83,7 @@ const MergeReportsModal: React.FC<MergeReportsModalProps> = ({
             <EmptyStateBody>
               {t('merge.modal', {
                 context: 'body-errored',
-                msg: errorMessage
+                msg: mergeProcessState.errorMessage
               })}
             </EmptyStateBody>
           </EmptyState>

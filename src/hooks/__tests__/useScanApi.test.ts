@@ -593,14 +593,16 @@ describe('useMergeReportsApi', () => {
 
     const hook = renderHook(() => useMergeReportsApi());
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.InProgress);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({ state: 'InProgress' });
 
     await act(async () => {
       await hook.result.current.requestReportsMerge(reportsToMerge);
     });
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.Successful);
-    expect(hook.result.current.mergeProcessState.mergedReportId).toBe(defaultReportId);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
+      state: 'Successful',
+      mergedReportId: defaultReportId
+    });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyPost).toHaveBeenCalledWith(process.env.REACT_APP_REPORTS_SERVICE_MERGE, { reports: reportsToMerge });
     expect(spyGet).toHaveBeenCalledTimes(1);
@@ -613,15 +615,16 @@ describe('useMergeReportsApi', () => {
 
     const hook = renderHook(() => useMergeReportsApi());
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.InProgress);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({ state: 'InProgress' });
 
     await act(async () => {
       await hook.result.current.requestReportsMerge(reportsToMerge);
     });
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.Errored);
-    expect(hook.result.current.mergeProcessState.mergedReportId).toBe(undefined);
-    expect(hook.result.current.errorMessage).toBe(errorMessage);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
+      state: 'Errored',
+      errorMessage: errorMessage
+    });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyGet).toHaveBeenCalledTimes(0);
   });
@@ -634,35 +637,38 @@ describe('useMergeReportsApi', () => {
 
     const hook = renderHook(() => useMergeReportsApi());
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.InProgress);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({ state: 'InProgress' });
 
     await act(async () => {
       await hook.result.current.requestReportsMerge(reportsToMerge);
     });
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.Errored);
-    expect(hook.result.current.mergeProcessState.mergedReportId).toBe(undefined);
-    expect(hook.result.current.errorMessage).toBe(errorMessage);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
+      state: 'Errored',
+      errorMessage: errorMessage
+    });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyGet).toHaveBeenCalledTimes(1);
   });
 
   it('should handle merge failure', async () => {
     spyPost.mockResolvedValueOnce(defaultPostResponse);
-    spyGet.mockResolvedValueOnce({ data: { status: 'failed' } });
+    const errorMessage = 'Too many widgets';
+    spyGet.mockResolvedValueOnce({ data: { status: 'failed', status_message: errorMessage } });
     const reportsToMerge = [1, 2, 3];
 
     const hook = renderHook(() => useMergeReportsApi());
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.InProgress);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({ state: 'InProgress' });
 
     await act(async () => {
       await hook.result.current.requestReportsMerge(reportsToMerge);
     });
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.Errored);
-    expect(hook.result.current.mergeProcessState.mergedReportId).toBe(undefined);
-    expect(hook.result.current.errorMessage).toBe('Merge job failed');
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
+      state: 'Errored',
+      errorMessage: errorMessage
+    });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyGet).toHaveBeenCalledTimes(1);
   });
@@ -675,7 +681,7 @@ describe('useMergeReportsApi', () => {
 
     const hook = renderHook(() => useMergeReportsApi());
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.InProgress);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({ state: 'InProgress' });
 
     await act(async () => {
       await hook.result.current.requestReportsMerge(reportsToMerge);
@@ -687,8 +693,10 @@ describe('useMergeReportsApi', () => {
       await jest.advanceTimersToNextTimer();
     });
 
-    expect(hook.result.current.mergeProcessState.state).toBe(MergeProcessState.Successful);
-    expect(hook.result.current.mergeProcessState.mergedReportId).toBe(defaultReportId);
+    expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
+      state: 'Successful',
+      mergedReportId: defaultReportId
+    });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyPost).toHaveBeenCalledWith(process.env.REACT_APP_REPORTS_SERVICE_MERGE, { reports: reportsToMerge });
     expect(spyGet).toHaveBeenCalledTimes(2);

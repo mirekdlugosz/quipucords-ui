@@ -25,11 +25,21 @@ type ApiScanErrorType = {
   message: string;
 };
 
-enum MergeProcessState {
-  InProgress,
-  Successful,
-  Errored
+interface InProgressState {
+  state: 'InProgress';
 }
+
+interface SuccessfulState {
+  state: 'Successful';
+  mergedReportId: number;
+}
+
+interface ErroredState {
+  state: 'Errored';
+  errorMessage: string;
+}
+
+type MergeProcessState = InProgressState | SuccessfulState | ErroredState;
 
 const useCreateScanApi = (onAddAlert: (alert: AlertProps) => void) => {
   const { t } = useTranslation();
@@ -496,12 +506,8 @@ const useShowConnectionsApi = () => {
 };
 
 const useMergeReportsApi = () => {
-  const [mergeProcessState, setMergeProcessState] = useState<{
-    state: MergeProcessState;
-    mergedReportId: number | undefined;
-  }>({ state: MergeProcessState.InProgress, mergedReportId: undefined });
+  const [mergeProcessState, setMergeProcessState] = useState<MergeProcessState>({ state: 'InProgress' });
   const { t } = useTranslation();
-  const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [mergeJobId, setMergeJobId] = useState<number | undefined>(undefined);
   const [mergePollAttempt, setMergePollAttempt] = useState<number>(0);
 
@@ -521,11 +527,11 @@ const useMergeReportsApi = () => {
         setMergeJobId(jobId);
       } catch (error) {
         if (isAxiosError(error)) {
-          setErrorMessage(error.message);
+          setMergeProcessState({ state: 'Errored', errorMessage: error.message });
         } else if (error instanceof Error) {
-          setErrorMessage(error.message);
+          setMergeProcessState({ state: 'Errored', errorMessage: error.message });
         } else {
-          setErrorMessage(t('merge.error', { context: 'unknown' }));
+          setMergeProcessState({ state: 'Errored', errorMessage: t('merge.error', { context: 'unknown' }) });
         }
       }
     },
@@ -533,11 +539,7 @@ const useMergeReportsApi = () => {
   );
 
   const cancelReportsMerge = useCallback((): void => {
-    setMergeProcessState({
-      state: MergeProcessState.InProgress,
-      mergedReportId: undefined
-    });
-    setErrorMessage(undefined);
+    setMergeProcessState({ state: 'InProgress' });
     setMergeJobId(undefined);
     setMergePollAttempt(0);
   }, []);
@@ -553,19 +555,12 @@ const useMergeReportsApi = () => {
         const status = response.data.status;
 
         if (status === 'completed') {
-          setMergeProcessState({
-            state: MergeProcessState.Successful,
-            mergedReportId: response.data.report_id
-          });
+          setMergeProcessState({ state: 'Successful', mergedReportId: response.data.report_id });
           return;
         }
 
         if (['failed', 'canceled'].includes(status)) {
-          setMergeProcessState({
-            state: MergeProcessState.Errored,
-            mergedReportId: undefined
-          });
-          setErrorMessage(response.data.status_message);
+          setMergeProcessState({ state: 'Errored', errorMessage: response.data.status_message });
           return;
         }
 
@@ -573,29 +568,16 @@ const useMergeReportsApi = () => {
       })
       .catch(error => {
         if (isAxiosError(error)) {
-          setErrorMessage(error.message);
+          setMergeProcessState({ state: 'Errored', errorMessage: error.message });
         } else {
-          setErrorMessage(t('merge.error', { context: 'unknown' }));
+          setMergeProcessState({ state: 'Errored', errorMessage: t('merge.error', { context: 'unknown' }) });
         }
       });
   }, [mergeJobId, mergePollAttempt, waitInterval, t]);
 
-  // FIXME: keep useEffect or do it explicitly in catch blocks?
-  useEffect(() => {
-    if (errorMessage === undefined) {
-      return;
-    }
-
-    setMergeProcessState({
-      state: MergeProcessState.Errored,
-      mergedReportId: undefined
-    });
-  }, [errorMessage]);
-
   return {
     requestReportsMerge,
     cancelReportsMerge,
-    errorMessage,
     mergeProcessState
   };
 };

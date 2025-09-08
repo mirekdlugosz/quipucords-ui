@@ -10,26 +10,18 @@ describe('MergeReportsModal', () => {
   let mockRequestReportsMerge;
   let mockCancelReportsMerge;
 
-  const mockHookWithState = (
-    state: useScanApi.MergeProcessState,
-    errorMessage: string | undefined = undefined,
-    mergedReportId: number | undefined = undefined
-  ) => {
+  const mockHookWithState = (mergeProcessState: useScanApi.MergeProcessState) => {
     (useScanApi.useMergeReportsApi as jest.Mock).mockReturnValue({
       requestReportsMerge: mockRequestReportsMerge,
       cancelReportsMerge: mockCancelReportsMerge,
-      mergeProcessState: {
-        state,
-        mergedReportId
-      },
-      errorMessage
+      mergeProcessState: mergeProcessState
     });
   };
 
   beforeEach(() => {
     mockRequestReportsMerge = jest.fn();
     mockCancelReportsMerge = jest.fn();
-    mockHookWithState(useScanApi.MergeProcessState.InProgress);
+    mockHookWithState({ state: 'InProgress' });
   });
 
   afterEach(() => {
@@ -46,7 +38,7 @@ describe('MergeReportsModal', () => {
   });
 
   it('should render a component after merge succeeded', async () => {
-    mockHookWithState(useScanApi.MergeProcessState.Successful);
+    mockHookWithState({ state: 'Successful', mergedReportId: 123 });
     const props = {
       isOpen: true,
       reportIds: []
@@ -56,7 +48,7 @@ describe('MergeReportsModal', () => {
   });
 
   it('should render a component after merge failed', async () => {
-    mockHookWithState(useScanApi.MergeProcessState.Errored, 'Lorem ipsum dolor sit');
+    mockHookWithState({ state: 'Errored', errorMessage: 'Lorem ipsum dolor sit' });
     const props = {
       isOpen: true,
       reportIds: []
@@ -95,7 +87,7 @@ describe('MergeReportsModal', () => {
       onSuccess: mockOnSuccess
     };
     const { rerender } = render(<MergeReportsModal {...props} />);
-    mockHookWithState(useScanApi.MergeProcessState.Successful, undefined, mergedReportId);
+    mockHookWithState({ state: 'Successful', mergedReportId: mergedReportId });
 
     rerender(<MergeReportsModal {...props} />);
 
@@ -112,7 +104,7 @@ describe('MergeReportsModal', () => {
       onSuccess: mockOnSuccess
     };
     const { rerender } = render(<MergeReportsModal {...props} />);
-    mockHookWithState(useScanApi.MergeProcessState.Successful, undefined, mergedReportId);
+    mockHookWithState({ state: 'Successful', mergedReportId: mergedReportId });
 
     rerender(<MergeReportsModal {...props} />);
     // In view, isOpen is derived from reportIds. However, component will re-render once when reportIds is
