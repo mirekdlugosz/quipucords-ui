@@ -527,7 +527,8 @@ const useMergeReportsApi = () => {
         setMergeJobId(jobId);
       } catch (error) {
         if (isAxiosError(error)) {
-          setMergeProcessState({ state: 'Errored', errorMessage: error.message });
+          const errorMessage = [error.message, apiHelpers.extractErrorMessage(error.response?.data)].join(': ');
+          setMergeProcessState({ state: 'Errored', errorMessage: errorMessage });
         } else if (error instanceof Error) {
           setMergeProcessState({ state: 'Errored', errorMessage: error.message });
         } else {
@@ -568,7 +569,8 @@ const useMergeReportsApi = () => {
       })
       .catch(error => {
         if (isAxiosError(error)) {
-          setMergeProcessState({ state: 'Errored', errorMessage: error.message });
+          const errorMessage = [error.message, apiHelpers.extractErrorMessage(error.response?.data)].join(': ');
+          setMergeProcessState({ state: 'Errored', errorMessage: errorMessage });
         } else {
           setMergeProcessState({ state: 'Errored', errorMessage: t('merge.error', { context: 'unknown' }) });
         }

@@ -572,6 +572,8 @@ describe('useDownloadReportApi', () => {
 describe('useMergeReportsApi', () => {
   let spyPost;
   let spyGet;
+  // Must be consistent with src/helpers/apiHelpers.ts `if (!data)` value
+  const defaultApiHelperErrorMessage = 'Unknown error';
   const defaultJobId = 11;
   const defaultReportId = 3;
   const defaultPostResponse = { data: { job_id: defaultJobId } };
@@ -623,7 +625,7 @@ describe('useMergeReportsApi', () => {
 
     expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
       state: 'Errored',
-      errorMessage: errorMessage
+      errorMessage: `${errorMessage}: ${defaultApiHelperErrorMessage}`
     });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyGet).toHaveBeenCalledTimes(0);
@@ -645,7 +647,7 @@ describe('useMergeReportsApi', () => {
 
     expect(hook.result.current.mergeProcessState).toStrictEqual<MergeProcessState>({
       state: 'Errored',
-      errorMessage: errorMessage
+      errorMessage: `${errorMessage}: ${defaultApiHelperErrorMessage}`
     });
     expect(spyPost).toHaveBeenCalledTimes(1);
     expect(spyGet).toHaveBeenCalledTimes(1);
